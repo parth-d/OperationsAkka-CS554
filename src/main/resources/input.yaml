@@ -1,3 +1,10 @@
+#YAML FORMAT
+#actor:
+#  - name: "ACTOR_NAME"
+#    messages:
+#      - type: "MESSAGE_TYPE"
+#        message: "MESSSAGE in string format (contains scala code)"
+
 actor:
   - name: "OrderProcessor"
     messages:

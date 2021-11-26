@@ -24,8 +24,9 @@ class OrderProcessor extends Actor with ActorLogging with Timers{
 
   val pManu: ActorRef = context.actorOf(PhoneManufacturer.props(self))
   val actor : ActorParser = Main.yaml.actors.find(c => c.name=="OrderProcessor" ).getOrElse(new ActorParser(null,null))
-//  timers.startTimerWithFixedDelay("capture-snapshot", TakeSnapshot, FiniteDuration(Duration("5 seconds").toMillis, MILLISECONDS))
-  timers.startSingleTimer("capture", TakeSnapshot, FiniteDuration(Duration("5 seconds").toMillis, MILLISECONDS) )
+
+//  send snapshot msg in every 5 seconds
+  timers.startTimerWithFixedDelay("capture-snapshot", TakeSnapshot, FiniteDuration(Duration("5 seconds").toMillis, MILLISECONDS))
 
   override def receive: Receive = {
 
@@ -38,7 +39,6 @@ class OrderProcessor extends Actor with ActorLogging with Timers{
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("pManu"->pManu))
     case _: myPhone1 =>
-      println("Got it...")
       var msg:MessageParser = actor.messages.find(m=> m.name == "myPhone1").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("log"->log))
@@ -53,6 +53,7 @@ class OrderProcessor extends Actor with ActorLogging with Timers{
   }
 }
 
+//Dynamic code Compiler
 object Compiler {
   def compile[A](code: String): (Map[String, Any]) => A = {
     val tb = universe.runtimeMirror(getClass.getClassLoader).mkToolBox()

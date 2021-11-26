@@ -14,17 +14,23 @@ object  PhoneManufacturer{
 }
 
 class PhoneManufacturer(orderProcessor: ActorRef) extends Actor with ActorLogging{
+
   var Phone1Manufactured = 0
   var Phone2Manufactured = 0
   var Phone3Manufactured = 0
+
   val actor : ActorParser =Main.yaml.actors.find(c => c.name=="PhoneManufacturer" ).getOrElse(new ActorParser(null,null))
+
+  //  delay time for each PhoneManufacturing
   private val manufacturingTime = FiniteDuration(Duration("1 seconds").toMillis, MILLISECONDS)
 
+//  BeanClass to persist state of PhoneManufacturer actor
   case class PhoneManufacturerPersistence(@BeanProperty var Phone1Manufactured: Int, @BeanProperty var Phone2Manufactured: Int, @BeanProperty var Phone3Manufactured: Int)
 
+//  CaptureState in snapshot.yaml file
    def captureState(): Unit = {
       val pm = PhoneManufacturerPersistence(Phone1Manufactured, Phone2Manufactured, Phone3Manufactured)
-      val writer = new FileWriter("sample.yaml")
+      val writer = new FileWriter("Snapshot.yaml")
       val mapper = new ObjectMapper(new YAMLFactory())
       println(pm)
       mapper.writeValue(writer, pm)
@@ -35,16 +41,11 @@ class PhoneManufacturer(orderProcessor: ActorRef) extends Actor with ActorLoggin
         +"\n - "+getClass.getDeclaredField("Phone3Manufactured").toString+" : "+Phone3Manufactured)
     }
 
-
-
   override def receive: Receive = {
     case TakeSnapshot =>
       var msg: MessageParser = actor.messages.find(m=> m.name == "TakeSnapshot").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
-      println("ref..",this.getClass)
       c(Map("ref"->this))
-//      context("captureState").asInstanceOf[Function]
-//      Capture.captureState()
     case "Manufacture myPhone1" =>
       var msg: MessageParser = actor.messages.find(m=> m.name == "Manufacture myPhone1").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
