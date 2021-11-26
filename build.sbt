@@ -22,4 +22,6 @@ libraryDependencies += "com.fasterxml.jackson.core" % "jackson-annotations" % "2
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.1.1"
 libraryDependencies += "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.1.1"
 libraryDependencies += "com.google.guava" % "guava" % "23.6-jre"
+libraryDependencies += "org.scala-lang" % "scala-compiler" % "2.12.15"
+libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.12.15"
 //libraryDependencies += "org.yaml" % "snakeyaml" % "1.28"

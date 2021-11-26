@@ -1,0 +1,94 @@
+actor:
+  - name: "OrderProcessor"
+    messages:
+      - type: "order"
+        message: |
+          import akka.actor.ActorRef
+          import scala.collection.parallel.CollectionConverters.{MapIsParallelizable, seqIsParallelizable}
+          val order = context("order").asInstanceOf[Map[String, Int]]
+          val pManu = context("pManu").asInstanceOf[ActorRef]
+          order.par.foreach(deliverable => (1 to deliverable._2 toList).par foreach(_ => pManu ! "Manufacture " + deliverable._1))
+          import akka.event.LoggingAdapter
+          val log = context("log").asInstanceOf[LoggingAdapter]
+          log.info("sent orders")
+      - type: "TakeSnapshot"
+        message: |
+          import akka.actor.ActorRef
+          import actors.OrderProcessor.TakeSnapshot
+          val pManu = context("pManu").asInstanceOf[ActorRef]
+          pManu ! TakeSnapshot
+      - type: "myPhone1"
+        message: |
+          import akka.event.LoggingAdapter
+          val log = context("log").asInstanceOf[LoggingAdapter]
+          log.info("Processed myPhone1")
+      - type: "myPhone2"
+        message: |
+          import akka.event.LoggingAdapter
+          val log = context("log").asInstanceOf[LoggingAdapter]
+          log.info("Processed myPhone2")
+      - type: "myPhone3"
+        message: |
+          import akka.event.LoggingAdapter
+          val log = context("log").asInstanceOf[LoggingAdapter]
+          log.info("Processed myPhone3")
+  - name: "PhoneManufacturer"
+    messages:
+      - type: "TakeSnapshot"
+        message: |
+          import actors.PhoneManufacturer
+          def ref = context("ref").asInstanceOf[PhoneManufacturer]
+          val m = ref.getClass.getMethod("captureState")
+          m.invoke(ref)
+      - type: "Manufacture myPhone1"
+        message: |
+          import components.body.B1
+          import components.camera.C1
+          import components.processor.P1
+          import phones.myPhone1
+          import akka.actor.ActorRef
+          import java.lang.System
+          import scala.concurrent.duration.FiniteDuration
+          val manufacturingTime = context("manufacturingTime").asInstanceOf[FiniteDuration]
+          var Phone1Manufactured = context("Phone1Manufactured").asInstanceOf[Int]
+          val sender = context("sender").asInstanceOf[ActorRef]
+          val loopTil = System.nanoTime() + manufacturingTime.toNanos
+          while (System.nanoTime() < loopTil) { }
+          Phone1Manufactured += 1
+          sender ! new myPhone1(new P1(), new C1, new B1)
+          Phone1Manufactured.toString
+      - type: "Manufacture myPhone2"
+        message: |
+          import components.body.B2
+          import components.camera.C1
+          import components.processor.P1
+          import phones.myPhone2
+          import akka.actor.ActorRef
+          import java.lang.System
+          import scala.concurrent.duration.FiniteDuration
+          val manufacturingTime = context("manufacturingTime").asInstanceOf[FiniteDuration]
+          var Phone2Manufactured = context("Phone2Manufactured").asInstanceOf[Int]
+          val sender = context("sender").asInstanceOf[ActorRef]
+          val loopTil = System.nanoTime() + manufacturingTime.toNanos
+          while (System.nanoTime() < loopTil) { }
+          Phone2Manufactured += 1
+          sender ! new myPhone2(new P1(), new C1, new B2)
+          Phone2Manufactured.toString
+      - type: "Manufacture myPhone3"
+        message: |
+          import components.body.B3
+          import components.camera.C1
+          import components.processor.P1
+          import phones.myPhone3
+          import akka.actor.ActorRef
+          import java.lang.System
+          import scala.concurrent.duration.FiniteDuration
+          val manufacturingTime = context("manufacturingTime").asInstanceOf[FiniteDuration]
+          var Phone3Manufactured = context("Phone3Manufactured").asInstanceOf[Int]
+          val sender = context("sender").asInstanceOf[ActorRef]
+          val loopTil = System.nanoTime() + manufacturingTime.toNanos
+          while (System.nanoTime() < loopTil) { }
+          Phone3Manufactured += 1
+          sender ! new myPhone3(new P1(), new C1, new B3)
+          Phone3Manufactured.toString
+
