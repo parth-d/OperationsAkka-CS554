@@ -7,8 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import parser.{ActorParser, MessageParser, YAMLParser}
 import phones.{myPhone1, myPhone2, myPhone3}
+
 import java.io.FileReader
-import scala.concurrent.duration.{Duration, FiniteDuration, MILLISECONDS}
+import scala.concurrent.duration.{Duration, DurationInt, FiniteDuration, MILLISECONDS}
 import scala.language.postfixOps
 import scala.reflect.runtime.universe
 import scala.tools.reflect.ToolBox
@@ -31,19 +32,19 @@ class OrderProcessor extends Actor with ActorLogging with Timers{
   override def receive: Receive = {
 
     case order: Map[String, Int] =>
-      var msg:MessageParser = actor.messages.find(m=> m.name == "order").getOrElse(new MessageParser(null,null))
+      val msg: MessageParser = actor.messages.find(m => m.name == "order").getOrElse(new MessageParser(null, null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("pManu"->pManu, "order"-> order, "log"->log))
     case TakeSnapshot =>
-      var msg:MessageParser = actor.messages.find(m=> m.name == "TakeSnapshot").getOrElse(new MessageParser(null,null))
+      val msg: MessageParser = actor.messages.find(m => m.name == "TakeSnapshot").getOrElse(new MessageParser(null, null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("pManu"->pManu))
     case _: myPhone1 =>
-      var msg:MessageParser = actor.messages.find(m=> m.name == "myPhone1").getOrElse(new MessageParser(null,null))
+      val msg: MessageParser = actor.messages.find(m => m.name == "myPhone1").getOrElse(new MessageParser(null, null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("log"->log))
     case _: myPhone2 =>
-      var msg:MessageParser = actor.messages.find(m=> m.name == "myPhone2").getOrElse(new MessageParser(null,null))
+      val msg: MessageParser = actor.messages.find(m => m.name == "myPhone2").getOrElse(new MessageParser(null, null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("log"->log))
     case _: myPhone3 =>
@@ -55,7 +56,7 @@ class OrderProcessor extends Actor with ActorLogging with Timers{
 
 //Dynamic code Compiler
 object Compiler {
-  def compile[A](code: String): (Map[String, Any]) => A = {
+  def compile[A](code: String): Map[String, Any] => A = {
     val tb = universe.runtimeMirror(getClass.getClassLoader).mkToolBox()
     val tree = tb.parse(
       s"""
@@ -71,19 +72,29 @@ object Compiler {
 }
 
 object Main extends App {
-  val order = Map[String, Int]("myPhone1" -> (Math.random() * 10).toInt, "myPhone2" -> (Math.random() * 10).toInt, "myPhone3" -> (Math.random() * 10).toInt)
-//  val order = Map[String, Int]("myPhone1" -> 2, "myPhone2" -> 2, "myPhone3" -> 2)
+  var ordersCreated: Int = 0
+  def createOrder():Map[String, Int] = {
+    ordersCreated += 1
+    Map[String, Int]("myPhone1" -> (Math.random() * 10).toInt, "myPhone2" -> (Math.random() * 10).toInt, "myPhone3" -> (Math.random() * 10).toInt, "orderNumber" -> ordersCreated)
+  }
+
+  //  val order = Map[String, Int]("myPhone1" -> 2, "myPhone2" -> 2, "myPhone3" -> 2)
   val system = ActorSystem("actorSystem")
   private val log = Logging(system, getClass.getName)
 
-//  Read YAML input file
+  //  Read YAML input file
   val reader = new FileReader("src/main/resources/input.YAML")
   val mapper = new ObjectMapper(new YAMLFactory())
   val yaml: YAMLParser = mapper.readValue(reader, classOf[YAMLParser])
 
-  log.info("Current order: " + order)
+  log.info("Creating orders continuously.")
   val orderProcessor: ActorRef = system.actorOf(Props[OrderProcessor])
-  log.info("Starting order")
-  orderProcessor ! order
+  log.info("Sending orders")
+  val deadline = 5.seconds.fromNow
+  while (deadline.hasTimeLeft){
+    orderProcessor ! createOrder()
+    Thread.sleep((math.random() * 100).toInt)
+  }
 }
+
 
