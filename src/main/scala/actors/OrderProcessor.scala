@@ -94,4 +94,3 @@ object Main extends App {
     Map[String, Int]("myPhone1" -> (Math.random() * 10).toInt, "myPhone2" -> (Math.random() * 10).toInt, "myPhone3" -> (Math.random() * 10).toInt, "orderNumber" -> ordersProcessed)
   }
 }
-
