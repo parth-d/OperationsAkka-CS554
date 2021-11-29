@@ -58,7 +58,9 @@ class PhoneManufacturer(orderProcessor: ActorRef) extends Actor with ActorLoggin
       var msg: MessageParser = actor.messages.find(m=> m.name == "Manufacture myPhone3").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       Phone3Manufactured = c(Map("manufacturingTime"->manufacturingTime, "Phone3Manufactured"-> Phone3Manufactured, "sender"->orderProcessor)).toInt
-
-
+    case "Manufacture orderNumber" =>
+      var msg: MessageParser = actor.messages.find(m=> m.name == "Manufacture orderNumber").getOrElse(new MessageParser(null,null))
+      val c = Compiler.compile[String](msg.message.stripMargin)
+      c(Map("log"->log))
   }
 }

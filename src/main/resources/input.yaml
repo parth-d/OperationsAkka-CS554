@@ -98,4 +98,9 @@ actor:
           Phone3Manufactured += 1
           sender ! new myPhone3(new P1(), new C1, new B3)
           Phone3Manufactured.toString
+      - type: "Manufacture orderNumber"
+        message: |
+          import akka.event.LoggingAdapter
+          val log = context("log").asInstanceOf[LoggingAdapter]
+          log.info("Order number received to manufacture. Ignoring.")
 

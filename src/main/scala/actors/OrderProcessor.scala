@@ -7,8 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import parser.{ActorParser, MessageParser, YAMLParser}
 import phones.{myPhone1, myPhone2, myPhone3}
+
 import java.io.FileReader
-import scala.concurrent.duration.{Duration, FiniteDuration, MILLISECONDS}
+import scala.concurrent.duration.{Duration, DurationInt, FiniteDuration, MILLISECONDS}
 import scala.language.postfixOps
 import scala.reflect.runtime.universe
 import scala.tools.reflect.ToolBox
@@ -31,6 +32,7 @@ class OrderProcessor extends Actor with ActorLogging with Timers{
   override def receive: Receive = {
 
     case order: Map[String, Int] =>
+      log.info("Parth recd order")
       var msg:MessageParser = actor.messages.find(m=> m.name == "order").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("pManu"->pManu, "order"-> order, "log"->log))
@@ -55,7 +57,7 @@ class OrderProcessor extends Actor with ActorLogging with Timers{
 
 //Dynamic code Compiler
 object Compiler {
-  def compile[A](code: String): (Map[String, Any]) => A = {
+  def compile[A](code: String): Map[String, Any] => A = {
     val tb = universe.runtimeMirror(getClass.getClassLoader).mkToolBox()
     val tree = tb.parse(
       s"""
@@ -71,8 +73,7 @@ object Compiler {
 }
 
 object Main extends App {
-  val order = Map[String, Int]("myPhone1" -> (Math.random() * 10).toInt, "myPhone2" -> (Math.random() * 10).toInt, "myPhone3" -> (Math.random() * 10).toInt)
-//  val order = Map[String, Int]("myPhone1" -> 2, "myPhone2" -> 2, "myPhone3" -> 2)
+  var ordersProcessed: Int = 0
   val system = ActorSystem("actorSystem")
   private val log = Logging(system, getClass.getName)
 
@@ -81,9 +82,16 @@ object Main extends App {
   val mapper = new ObjectMapper(new YAMLFactory())
   val yaml: YAMLParser = mapper.readValue(reader, classOf[YAMLParser])
 
-  log.info("Current order: " + order)
+  log.info("Starting")
   val orderProcessor: ActorRef = system.actorOf(Props[OrderProcessor])
   log.info("Starting order")
-  orderProcessor ! order
+  while (ordersProcessed < 21){
+    orderProcessor ! order()
+    Thread.sleep((math.random() * 500).toInt)
+  }
+  def order():Map[String, Int] = {
+    ordersProcessed += 1
+    Map[String, Int]("myPhone1" -> (Math.random() * 10).toInt, "myPhone2" -> (Math.random() * 10).toInt, "myPhone3" -> (Math.random() * 10).toInt, "orderNumber" -> ordersProcessed)
+  }
 }
 
