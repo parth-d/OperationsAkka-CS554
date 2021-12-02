@@ -43,23 +43,23 @@ class PhoneManufacturer(orderProcessor: ActorRef) extends Actor with ActorLoggin
 
   override def receive: Receive = {
     case TakeSnapshot =>
-      var msg: MessageParser = actor.messages.find(m=> m.name == "TakeSnapshot").getOrElse(new MessageParser(null,null))
+      val msg: MessageParser = actor.messages.find(m=> m.name == "TakeSnapshot").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("ref"->this))
     case "Manufacture myPhone1" =>
-      var msg: MessageParser = actor.messages.find(m=> m.name == "Manufacture myPhone1").getOrElse(new MessageParser(null,null))
+      val msg: MessageParser = actor.messages.find(m=> m.name == "Manufacture myPhone1").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       Phone1Manufactured = c(Map("manufacturingTime"->manufacturingTime, "Phone1Manufactured"-> Phone1Manufactured, "sender"->orderProcessor)).toInt
     case "Manufacture myPhone2" =>
-      var msg: MessageParser = actor.messages.find(m=> m.name == "Manufacture myPhone2").getOrElse(new MessageParser(null,null))
+      val msg: MessageParser = actor.messages.find(m=> m.name == "Manufacture myPhone2").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       Phone2Manufactured = c(Map("manufacturingTime"->manufacturingTime, "Phone2Manufactured"-> Phone2Manufactured, "sender"->orderProcessor)).toInt
     case "Manufacture myPhone3" =>
-      var msg: MessageParser = actor.messages.find(m=> m.name == "Manufacture myPhone3").getOrElse(new MessageParser(null,null))
+      val msg: MessageParser = actor.messages.find(m=> m.name == "Manufacture myPhone3").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       Phone3Manufactured = c(Map("manufacturingTime"->manufacturingTime, "Phone3Manufactured"-> Phone3Manufactured, "sender"->orderProcessor)).toInt
     case "Manufacture orderNumber" =>
-      var msg: MessageParser = actor.messages.find(m=> m.name == "Manufacture orderNumber").getOrElse(new MessageParser(null,null))
+      val msg: MessageParser = actor.messages.find(m=> m.name == "Manufacture orderNumber").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("log"->log))
   }

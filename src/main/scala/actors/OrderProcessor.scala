@@ -1,6 +1,6 @@
 package actors
 
-import actors.OrderProcessor.TakeSnapshot
+import actors.OrderProcessor.{TakeSnapshot, numberofOrders, orderDelay}
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props, Timers}
 import akka.event.Logging
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -9,7 +9,7 @@ import parser.{ActorParser, MessageParser, YAMLParser}
 import phones.{myPhone1, myPhone2, myPhone3}
 
 import java.io.FileReader
-import scala.concurrent.duration.{Duration, DurationInt, FiniteDuration, MILLISECONDS}
+import scala.concurrent.duration.{Duration, FiniteDuration, MILLISECONDS}
 import scala.language.postfixOps
 import scala.reflect.runtime.universe
 import scala.tools.reflect.ToolBox
@@ -18,6 +18,8 @@ import scala.tools.reflect.ToolBox
 object OrderProcessor {
 //  def props(phoneManufacturer: ActorRef): Props = Props(new OrderProcessor(phoneManufacturer))
   case object TakeSnapshot
+  val numberofOrders: Int = 20
+  val orderDelay: Int = 500
 
 }
 
@@ -33,19 +35,19 @@ class OrderProcessor extends Actor with ActorLogging with Timers{
 
     case order: Map[String, Int] =>
       log.info("Parth recd order")
-      var msg:MessageParser = actor.messages.find(m=> m.name == "order").getOrElse(new MessageParser(null,null))
+      val msg: MessageParser = actor.messages.find(m => m.name == "order").getOrElse(new MessageParser(null, null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("pManu"->pManu, "order"-> order, "log"->log))
     case TakeSnapshot =>
-      var msg:MessageParser = actor.messages.find(m=> m.name == "TakeSnapshot").getOrElse(new MessageParser(null,null))
+      val msg:MessageParser = actor.messages.find(m=> m.name == "TakeSnapshot").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("pManu"->pManu))
     case _: myPhone1 =>
-      var msg:MessageParser = actor.messages.find(m=> m.name == "myPhone1").getOrElse(new MessageParser(null,null))
+      val msg:MessageParser = actor.messages.find(m=> m.name == "myPhone1").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("log"->log))
     case _: myPhone2 =>
-      var msg:MessageParser = actor.messages.find(m=> m.name == "myPhone2").getOrElse(new MessageParser(null,null))
+      val msg:MessageParser = actor.messages.find(m=> m.name == "myPhone2").getOrElse(new MessageParser(null,null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("log"->log))
     case _: myPhone3 =>
@@ -85,9 +87,9 @@ object Main extends App {
   log.info("Starting")
   val orderProcessor: ActorRef = system.actorOf(Props[OrderProcessor])
   log.info("Starting order")
-  while (ordersProcessed < 21){
+  while (ordersProcessed <= numberofOrders){
     orderProcessor ! order()
-    Thread.sleep((math.random() * 500).toInt)
+    Thread.sleep((math.random() * orderDelay).toInt)
   }
   def order():Map[String, Int] = {
     ordersProcessed += 1
