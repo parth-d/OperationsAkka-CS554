@@ -1,6 +1,6 @@
 package actors
 
-import actors.OrderProcessor.TakeSnapshot
+//import actors.OrderProcessor.TakeSnapshot
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -12,29 +12,36 @@ import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
 
 object PhoneManufacturer {
   def props(orderProcessor: ActorRef): Props = Props(new PhoneManufacturer(orderProcessor))
+  case class TakeSnapshot(ordersProcessed: Int)
 }
 
 class PhoneManufacturer(orderProcessor: ActorRef) extends Actor with ActorLogging {
+
+  import PhoneManufacturer.TakeSnapshot
 
   // Manufactured phone counters. Will be incremented, hence var used
   var Phone1Manufactured = 0
   var Phone2Manufactured = 0
   var Phone3Manufactured = 0
+
   //  delay time for each PhoneManufacturing
   private val manufacturingTime = FiniteDuration(100, MILLISECONDS)
 
   val actor: ActorParser = Main.yaml.actors.find(c => c.name == "PhoneManufacturer").getOrElse(new ActorParser(null, null))
 
+  case class OrderProcessorPersistence(@BeanProperty var ordersProcessed: Int, @BeanProperty var PhonesManufactured: PhoneManufacturerPersistence)
+
   //  BeanClass to persist state of PhoneManufacturer actor
   case class PhoneManufacturerPersistence(@BeanProperty var Phone1Manufactured: Int, @BeanProperty var Phone2Manufactured: Int, @BeanProperty var Phone3Manufactured: Int)
 
   //  CaptureState in snapshot.yaml file
-  def captureState(): Unit = {
-    val pm = PhoneManufacturerPersistence(Phone1Manufactured, Phone2Manufactured, Phone3Manufactured)
+  def captureState(ordersProcessed: Int): Unit = {
+    var pm = PhoneManufacturerPersistence(Phone1Manufactured, Phone2Manufactured, Phone3Manufactured)
+    var op = OrderProcessorPersistence(ordersProcessed, pm)
     val writer = new FileWriter("Snapshot.yaml")
     val mapper = new ObjectMapper(new YAMLFactory())
-    println(pm)
-    mapper.writeValue(writer, pm)
+    println(op)
+    mapper.writeValue(writer, op)
     println("Data persisted in yaml")
     log.info("" + getClass.getName
       + ":\n - " + getClass.getDeclaredField("Phone1Manufactured").toString + " : " + Phone1Manufactured
@@ -43,10 +50,12 @@ class PhoneManufacturer(orderProcessor: ActorRef) extends Actor with ActorLoggin
   }
 
   override def receive: Receive = {
-    case TakeSnapshot =>
-      val msg: MessageParser = actor.messages.find(m => m.name == "TakeSnapshot").getOrElse(new MessageParser(null, null))
-      val c = Compiler.compile[String](msg.message.stripMargin)
-      c(Map("ref" -> this))
+    case TakeSnapshot(ordersProcessed) =>
+      println("ordersProcessed:", ordersProcessed)
+//      val msg: MessageParser = actor.messages.find(m => m.name == "TakeSnapshot").getOrElse(new MessageParser(null, null))
+//      val c = Compiler.compile[String](msg.message.stripMargin)
+//      c(Map("ref" -> this, "ordersProcessed" -> ordersProcessed))
+        captureState(ordersProcessed)
 
     // Order for myPhone1 received
     case "Manufacture myPhone1" =>

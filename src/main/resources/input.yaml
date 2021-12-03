@@ -18,12 +18,14 @@ actor:
           import akka.event.LoggingAdapter
           val log = context("log").asInstanceOf[LoggingAdapter]
           log.info("Processing Received order")
+          order.getOrElse("orderNumber",0).toString
       - type: "TakeSnapshot"
         message: |
           import akka.actor.ActorRef
-          import actors.OrderProcessor.TakeSnapshot
+          import actors.PhoneManufacturer.TakeSnapshot
+          val ordersProcessed = context("ordersProcessed").asInstanceOf[Int]
           val pManu = context("pManu").asInstanceOf[ActorRef]
-          pManu ! TakeSnapshot
+          pManu ! TakeSnapshot(ordersProcessed)
       - type: "myPhone1"
         message: |
           import akka.event.LoggingAdapter
@@ -45,6 +47,7 @@ actor:
         message: |
           import actors.PhoneManufacturer
           def ref = context("ref").asInstanceOf[PhoneManufacturer]
+          def ordersProcessed = context("ordersProcessed").asInstanceOf[Int]
           val m = ref.getClass.getMethod("captureState")
           m.invoke(ref)
       - type: "Manufacture myPhone1"
