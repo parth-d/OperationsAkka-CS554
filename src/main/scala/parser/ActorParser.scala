@@ -7,6 +7,7 @@ import scala.jdk.CollectionConverters._
 
 //Parses each Actor in yaml file
 class ActorParser(@JsonProperty("name") _name: String, @JsonProperty("messages") _messages: JList[MessageParser]) {
+//  To save actor's name and list of messages that it recieves
   val name = Preconditions.checkNotNull(_name)
   val messages: List[MessageParser] = Preconditions.checkNotNull(_messages).asScala.toList
 }

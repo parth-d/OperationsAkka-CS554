@@ -16,6 +16,7 @@ import scala.tools.reflect.ToolBox
 
 
 object OrderProcessor {
+//  snapshot message
   case object TakeSnapshot
 
   // Orders processed will change, hence var used
@@ -31,21 +32,18 @@ class OrderProcessor extends Actor with ActorLogging with Timers {
   val pManu: ActorRef = context.actorOf(PhoneManufacturer.props(self), name="phone-manufacturer")
   val actor: ActorParser = Main.yaml.actors.find(c => c.name == "OrderProcessor").getOrElse(new ActorParser(null, null))
 
-  //  send snapshot msg in every 5 seconds
+  //  Sends Recursive Snapshot Msg to capture Actors State in every 5 seconds
   timers.startTimerWithFixedDelay("capture-snapshot", TakeSnapshot, FiniteDuration(Duration("5 seconds").toMillis, MILLISECONDS))
 
 
   override def receive: Receive = {
     // Order received
     case order: Map[String, Int] =>
-      print(order)
-//      order.get
       val msg: MessageParser = actor.messages.find(m => m.name == "order").getOrElse(new MessageParser(null, null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       ordersProcessed = c(Map("pManu" -> pManu, "order" -> order, "log" -> log)).toInt
 
-
-    // Snapshot message
+    // capture Actors State and sends recursive msg to child actors
     case TakeSnapshot =>
       val msg: MessageParser = actor.messages.find(m => m.name == "TakeSnapshot").getOrElse(new MessageParser(null, null))
       val c = Compiler.compile[String](msg.message.stripMargin)
@@ -99,7 +97,7 @@ object Main extends App {
   val mapper = new ObjectMapper(new YAMLFactory())
   val yaml: YAMLParser = mapper.readValue(reader, classOf[YAMLParser])
 
-  // Logic to send orders
+  // creates two actors to create and process orders
   val orderProcessor: ActorRef = system.actorOf(Props[OrderProcessor], name="order-processor")
   val orderCreator:ActorRef = system.actorOf(OrderCreator.props(orderProcessor), name = "order-creator")
 

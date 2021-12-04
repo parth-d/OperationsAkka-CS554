@@ -1,6 +1,4 @@
 package actors
-
-//import actors.OrderProcessor.TakeSnapshot
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -29,6 +27,7 @@ class PhoneManufacturer(orderProcessor: ActorRef) extends Actor with ActorLoggin
 
   val actor: ActorParser = Main.yaml.actors.find(c => c.name == "PhoneManufacturer").getOrElse(new ActorParser(null, null))
 
+  //  BeanClass to persist state of OrderProcessor actor
   case class OrderProcessorPersistence(@BeanProperty var ordersProcessed: Int, @BeanProperty var PhonesManufactured: PhoneManufacturerPersistence)
 
   //  BeanClass to persist state of PhoneManufacturer actor
@@ -38,7 +37,7 @@ class PhoneManufacturer(orderProcessor: ActorRef) extends Actor with ActorLoggin
   def captureState(ordersProcessed: Int): Unit = {
     var pm = PhoneManufacturerPersistence(Phone1Manufactured, Phone2Manufactured, Phone3Manufactured)
     var op = OrderProcessorPersistence(ordersProcessed, pm)
-    val writer = new FileWriter("Snapshot.yaml")
+    val writer = new FileWriter("src/main/resources/Snapshot.yaml")
     val mapper = new ObjectMapper(new YAMLFactory())
     println(op)
     mapper.writeValue(writer, op)
@@ -50,12 +49,12 @@ class PhoneManufacturer(orderProcessor: ActorRef) extends Actor with ActorLoggin
   }
 
   override def receive: Receive = {
+//  Taking snapshot and persisting in yaml
     case TakeSnapshot(ordersProcessed) =>
       println("ordersProcessed:", ordersProcessed)
-//      val msg: MessageParser = actor.messages.find(m => m.name == "TakeSnapshot").getOrElse(new MessageParser(null, null))
-//      val c = Compiler.compile[String](msg.message.stripMargin)
-//      c(Map("ref" -> this, "ordersProcessed" -> ordersProcessed))
-        captureState(ordersProcessed)
+      val msg: MessageParser = actor.messages.find(m => m.name == "TakeSnapshot").getOrElse(new MessageParser(null, null))
+      val c = Compiler.compile[String](msg.message.stripMargin)
+      c(Map("ref" -> this, "ordersProcessed" -> ordersProcessed))
 
     // Order for myPhone1 received
     case "Manufacture myPhone1" =>

@@ -47,9 +47,9 @@ actor:
         message: |
           import actors.PhoneManufacturer
           def ref = context("ref").asInstanceOf[PhoneManufacturer]
-          def ordersProcessed = context("ordersProcessed").asInstanceOf[Int]
-          val m = ref.getClass.getMethod("captureState")
-          m.invoke(ref)
+          val ordersProcessed = context("ordersProcessed").asInstanceOf[Int]
+          val m = ref.getClass.getMethod("captureState",classOf[Int])
+          m.invoke(ref, ordersProcessed)
       - type: "Manufacture myPhone1"
         message: |
           import components.body.B1
