@@ -2,18 +2,18 @@ package actors
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import parser.{ActorParser, MessageParser}
+import parser.{ActorParser, MessageParser, YAMLParser}
 
 import java.io.FileWriter
 import scala.beans.BeanProperty
 import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
 
 object PhoneManufacturer {
-  def props(orderProcessor: ActorRef): Props = Props(new PhoneManufacturer(orderProcessor))
+  def props(orderProcessor: ActorRef, yaml: YAMLParser): Props = Props(new PhoneManufacturer(orderProcessor, yaml))
   case class TakeSnapshot(ordersProcessed: Int)
 }
 
-class PhoneManufacturer(orderProcessor: ActorRef) extends Actor with ActorLogging {
+class PhoneManufacturer(orderProcessor: ActorRef, yaml: YAMLParser) extends Actor with ActorLogging {
 
   import PhoneManufacturer.TakeSnapshot
 
@@ -25,7 +25,7 @@ class PhoneManufacturer(orderProcessor: ActorRef) extends Actor with ActorLoggin
   //  delay time for each PhoneManufacturing
   private val manufacturingTime = FiniteDuration(100, MILLISECONDS)
 
-  val actor: ActorParser = Main.yaml.actors.find(c => c.name == "PhoneManufacturer").getOrElse(new ActorParser(null, null))
+  val actor: ActorParser = yaml.actors.find(c => c.name == "PhoneManufacturer").getOrElse(new ActorParser(null, null))
 
   //  BeanClass to persist state of OrderProcessor actor
   case class OrderProcessorPersistence(@BeanProperty var ordersProcessed: Int, @BeanProperty var PhonesManufactured: PhoneManufacturerPersistence)

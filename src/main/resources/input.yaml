@@ -17,8 +17,9 @@ actor:
           order.par.foreach(deliverable => (1 to deliverable._2 toList).par foreach(_ => pManu ! "Manufacture " + deliverable._1))
           import akka.event.LoggingAdapter
           val log = context("log").asInstanceOf[LoggingAdapter]
-          log.info("Processing Received order")
-          order.getOrElse("orderNumber",0).toString
+          val orderNumber = order.getOrElse("orderNumber",0).toString
+          log.info("Processing Received order :"+ orderNumber)
+          orderNumber
       - type: "TakeSnapshot"
         message: |
           import akka.actor.ActorRef

@@ -16,6 +16,7 @@ import scala.tools.reflect.ToolBox
 
 
 object OrderProcessor {
+  def props(yaml: YAMLParser): Props = Props(new OrderProcessor(yaml))
 //  snapshot message
   case object TakeSnapshot
 
@@ -24,13 +25,15 @@ object OrderProcessor {
 
 }
 
-class OrderProcessor extends Actor with ActorLogging with Timers {
+class OrderProcessor(yaml: YAMLParser) extends Actor with ActorLogging with Timers {
 
   // Actors required in our system
   // pManu: Phone manufacturer: Actor processing phones based on the model: {myPhone1, myPhone2, myPhone3}
   // actor: Order processor: Actor sending orders to pManu
-  val pManu: ActorRef = context.actorOf(PhoneManufacturer.props(self), name="phone-manufacturer")
-  val actor: ActorParser = Main.yaml.actors.find(c => c.name == "OrderProcessor").getOrElse(new ActorParser(null, null))
+  val pManu: ActorRef = context.actorOf(PhoneManufacturer.props(self, yaml), name="phone-manufacturer")
+  val actor: ActorParser = yaml.actors.find(c => c.name == "OrderProcessor").getOrElse(new ActorParser(null, null))
+
+  log.info("Order Processor Created")
 
   //  Sends Recursive Snapshot Msg to capture Actors State in every 5 seconds
   timers.startTimerWithFixedDelay("capture-snapshot", TakeSnapshot, FiniteDuration(Duration("5 seconds").toMillis, MILLISECONDS))
@@ -48,6 +51,7 @@ class OrderProcessor extends Actor with ActorLogging with Timers {
       val msg: MessageParser = actor.messages.find(m => m.name == "TakeSnapshot").getOrElse(new MessageParser(null, null))
       val c = Compiler.compile[String](msg.message.stripMargin)
       c(Map("pManu" -> pManu, "ordersProcessed" -> ordersProcessed))
+//      log.info("afsZ"+c)
 
     // Phone Manufacturer returned a manufactured myPhone1
     case _: myPhone1 =>
@@ -98,7 +102,7 @@ object Main extends App {
   val yaml: YAMLParser = mapper.readValue(reader, classOf[YAMLParser])
 
   // creates two actors to create and process orders
-  val orderProcessor: ActorRef = system.actorOf(Props[OrderProcessor], name="order-processor")
+  val orderProcessor: ActorRef = system.actorOf(OrderProcessor.props(yaml) , name="order-processor")
   val orderCreator:ActorRef = system.actorOf(OrderCreator.props(orderProcessor), name = "order-creator")
 
 }
