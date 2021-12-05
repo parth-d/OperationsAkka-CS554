@@ -47,10 +47,6 @@ class OrderProcessorSpec extends AnyWordSpec with Matchers {
       system.actorOf(OrderProcessor.props(yaml) , name="child-phone-manufacturer")
       TestProbe().expectActor("/user/child-phone-manufacturer/phone-manufacturer")
     }
-//    "result in getting TakeSnapshot message" in {
-//      val orderProcessor = system.actorOf(OrderProcessor.props(yaml) , name="order-processor-snapshot")
-//      TestProbe().expectMsg(max = 20.seconds, OrderProcessor.TakeSnapshot)
-//    }
     "result in logging 'Processing Received order :3' at info when order message is sent to orderProcessor" in {
       EventFilter.info(pattern = "Processing Received order :3") intercept {
         val orderProcessor = system.actorOf(OrderProcessor.props(yaml) , name="order-processor-getOrder")
