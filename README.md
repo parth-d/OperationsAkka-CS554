@@ -11,4 +11,8 @@ Implementation of Akka actors for a particular use case using Scala. Input YAML 
 `sbt compile` used to compile the code<br>
 `~run` used to begin running the program
 
-## Requirements
+## Use Case
+1. Orders created for Processor for a Phone Factory. 
+2. Random number of Orders are created for Processing. Each order contains a random number of Phone Model 1, Phone Model 2, or Phone Model 3. 
+3. Each phone has a specific configuration with a body labeled B1, B2, or B3, and a camera, C1, and a processor, P1. 
+4. Each order get processed and all information is logged in a logfile.
