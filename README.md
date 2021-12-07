@@ -21,3 +21,19 @@ Implementation of Akka actors for a particular use case using Scala. Input YAML 
 2. Random number of Orders are created for Processing. Each order contains a random number of Phone Model 1, Phone Model 2, or Phone Model 3. 
 3. Each phone has a specific configuration with a body labeled B1, B2, or B3, and a camera, C1, and a processor, P1. 
 4. Each order get processed and all information is logged in a logfile.
+
+## Examples
+### Order Creation
+Consists of a random number of Phone 1, Phone 2, and Phone 3. 
+![image](https://user-images.githubusercontent.com/55963699/144965457-e2db09a0-ca33-437d-8d05-051a666e17cf.png)
+### Example of Phone Body
+Similar to the creation of B2, B3, C1, and P1.<br>
+<img src="https://user-images.githubusercontent.com/55963699/144965652-f40edac4-5b4a-45e9-98bb-a5c6080461b1.png" height="100px"/> 
+
+### Phone Class
+Each phone is made of a different body, camera, and processor.<br>
+<img src="https://user-images.githubusercontent.com/55963699/144966275-cfc2c428-53aa-4f22-bc94-3bc4717f0d6c.png" height="100px"/>
+
+### Example of Running the Code
+<img src="https://user-images.githubusercontent.com/55963699/144966544-c81b94f4-97ba-40fa-8254-e0c269779f24.png" height="150px"/>
+
