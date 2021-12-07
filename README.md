@@ -1,5 +1,10 @@
 # OperationsAkka-CS554
-**Group Members:** Parth Despande, Fatema Engineeringwala, Mallika Patil
+### Group Members
+| Name                   | Email           | UIN       | 
+|------------------------|-----------------|-----------|
+| Parth Deshpande        | pdeshp8@uic.edu | 657711378 |
+| Fatema Engineeringwala | fengin2@uic.edu | 675589901 | 
+| Mallika Patil          | mpatil5@uic.edu | 660213398 |
 
 ## Brief Project Description 
 Actor-based computational model by implementing a configurable generator of Actor-based applications using Scala or Java based on Akka actorsand you will build and run your project using the SBT with the runMain command from the command line.
