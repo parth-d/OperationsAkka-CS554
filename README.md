@@ -22,6 +22,13 @@ Implementation of Akka actors for a particular use case using Scala. Input YAML 
 3. Each phone has a specific configuration with a body labeled B1, B2, or B3, and a camera, C1, and a processor, P1. 
 4. Each order get processed and all information is logged in a logfile.
 
+## Implementation
+1. OrderCreator class is responsible for random order generation and sending this order message to OrderProcessor
+2. OrderProcessor sends each order type to the PhoneManufacturer and expects a Manufactured phone in return
+3. PhoneManufacturer manufactures phone as it receives order from OrderProcessor
+4. Input.yaml file stores the list or actor and its messages as scala code
+5. Snapshot.yaml file stores the actor's state periodically with a fixed delay of 5 seconds
+
 ## Examples
 ### Order Creation
 Consists of a random number of Phone 1, Phone 2, and Phone 3. 
